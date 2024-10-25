@@ -12,7 +12,7 @@ func TestVpcModule(t *testing.T) {
 
 	// Configure the Terraform options
 	terraformOptions := &terraform.Options{
-		TerraformDir: "../", // Assumes the test is inside a "tests" directory
+		TerraformDir: "../",
 		Vars: map[string]interface{}{
 			"vpc_cidr_block":                  "10.0.0.0/16",
 			"public_subnets_cidr_blocks":      []string{"10.0.1.0/24", "10.0.2.0/24"},
@@ -20,7 +20,7 @@ func TestVpcModule(t *testing.T) {
 			"private_subnets_rds_cidr_blocks": []string{"10.0.5.0/24", "10.0.6.0/24"},
 			"availability_zones":              []string{"us-east-1a", "us-east-1b"},
 			"tags": map[string]string{
-				"Environment": "dev",
+				"Environment": "test",
 				"Terraform":   "true",
 			},
 		},
