@@ -27,14 +27,11 @@ resource "aws_s3_bucket_policy" "application_bucket_policy" {
     Version = "2012-10-17"
     Statement = [
       {
-        Effect = "Allow"
-        Action = "s3:*"
-        Resource = [
-          "${aws_s3_bucket.application_bucket.arn}",
-          "${aws_s3_bucket.application_bucket.arn}/*" # Object level actions
-        ]
+        Effect   = "Allow"
+        Action   = "s3:*"
+        Resource = aws_s3_bucket.application_bucket.arn
         Principal = {
-          AWS = "${var.python_web_app_pod_role_arn}"
+          AWS = var.python_web_app_pod_role_arn
         }
       }
     ]
