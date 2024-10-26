@@ -7,6 +7,16 @@ on:
   push:
     tags:
       - '*-*'
+  workflow_dispatch:
+    inputs:
+      module_name:
+        description: 'Select the module you want to test'
+        required: true
+        type: choice
+        options:
+          - vpc
+          - bastion
+          - secrets
 
 permissions:
   id-token: write
@@ -39,29 +49,49 @@ jobs:
     - name: Set up Terraform
       uses: hashicorp/setup-terraform@v2
       with:
-        terraform_version: 1.0.0
+        terraform_version: 1.5.7
 
     - name: Detect Module Directory
       id: detect-module
       run: |
-        if [[ "${GITHUB_REF}" == refs/pull/* ]]; then
-          # Extract the module name from the branch name in the pull request
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          MODULE_NAME="${{ github.event.inputs.module_name }}"
+        elif [[ "${GITHUB_REF}" == refs/pull/* ]]; then
           MODULE_NAME=$(echo "${GITHUB_HEAD_REF}" | cut -d '/' -f1)
         elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
-          # Extract the module name based on the tag name
           MODULE_NAME=$(echo "${GITHUB_REF}" | sed 's/refs\/tags\///' | sed 's/-v[0-9.]*//')
         fi
         echo "module_name=${MODULE_NAME}" >> $GITHUB_ENV
+  
+    - name: Run Terraform Formatting Check
+      run: terraform fmt -check -recursive ./terraform-modules/${{ env.module_name }}
 
+    - name: Run Terraform Validation
+      run: terraform validate ./terraform-modules/${{ env.module_name }}
+
+    - name: Install tflint
+      run: |
+        curl -sL https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
+  
+    - name: Run Terraform Lint
+      run: tflint --recursive ./terraform-modules/${{ env.module_name }}
+  
+    - name: Install golangci-lint
+      run: |
+        curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.45.2
+  
+    - name: Run Go Lint
+      run: golangci-lint run ./terraform-modules/${{ env.module_name }}/tests/...
+  
     - name: Install dependencies
       run: |
-        cd ${{ env.module_name }}/tests
+        cd terraform-modules/${{ env.module_name }}/tests
         if [ ! -f "go.mod" ]; then
           go mod init github.com/your-org/${{ env.module_name }}-tests
         fi
         go mod tidy -compat=1.23
-
+  
     - name: Run Terratest
       run: |
-        cd ${{ env.module_name }}/tests
+        cd terraform-modules/${{ env.module_name }}/tests
         go test -v -timeout 30m
