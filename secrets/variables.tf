@@ -4,5 +4,6 @@ variable "allowed_roles" {
 }
 
 variable "region" {
+  type    = string
   default = "us-east-1"
 }

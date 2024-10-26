@@ -1,7 +1,3 @@
-provider "aws" {
-  region = var.region
-}
-
 resource "random_password" "argocd_password" {
   length = 16
   upper  = true
