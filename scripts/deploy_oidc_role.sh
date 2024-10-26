@@ -4,7 +4,7 @@
 ROLE_NAME="GitHubActionsRoleEsta"
 ROLE_DESCRIPTION="Role for GitHub Actions workflows."
 POLICY_NAME="GitHubActionsPolicy"
-REPO_NAME="Bartosz-Szadkowski/aws-eks-infra-v2"
+REPO_NAME="Bartosz-Szadkowski/*"
 OIDC_PROVIDER_URL="token.actions.githubusercontent.com"
 
 # Fetch AWS account ID
