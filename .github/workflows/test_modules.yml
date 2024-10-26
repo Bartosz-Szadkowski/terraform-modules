@@ -17,6 +17,9 @@ on:
           - vpc
           - bastion
           - secrets
+          - iam
+          - eks
+          - s3
 
 permissions:
   id-token: write
