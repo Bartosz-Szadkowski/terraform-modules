@@ -56,6 +56,9 @@ jobs:
     - name: Install dependencies
       run: |
         cd ${{ env.module_name }}/tests
+        if [ ! -f "go.mod" ]; then
+          go mod init github.com/your-org/${{ env.module_name }}-tests
+        fi
         go mod tidy
 
     - name: Run Terratest
