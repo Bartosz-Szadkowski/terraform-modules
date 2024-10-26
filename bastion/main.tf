@@ -1,3 +1,7 @@
+provider "aws" {
+  region = var.region
+}
+
 ##################
 ### BASTION SG
 ##################
@@ -101,7 +105,7 @@ resource "aws_iam_instance_profile" "instance_profile" {
 
 resource "aws_instance" "bastion" {
   for_each               = toset(var.subnet_ids)
-  ami                    = data.aws_ami.ubuntu.id
+  ami                    = data.aws_ami.amazon_linux.id
   instance_type          = var.instance_type
   subnet_id              = each.value # This will loop through each subnet ID
   vpc_security_group_ids = [aws_security_group.bastion_sg.id]
@@ -110,125 +114,40 @@ resource "aws_instance" "bastion" {
   key_name = null # This disables SSH key-pair access
 
   user_data_replace_on_change = true
-  user_data                   = <<-EOF
-
-  #!/bin/bash
-
-  # Update the system
-  apt-get -y update
-  apt-get -y upgrade
-
-  # Install zsh
-  apt-get -y install zsh
-
-  # Install util-linux to use the 'chsh' command (already included in util-linux in Ubuntu)
-  apt-get -y install util-linux
-
-  # Install git and wget, needed for Oh My Zsh installation
-  apt-get -y install git wget
-
-  # Function to install Oh My Zsh for a given user
-  install_oh_my_zsh() {
-    local user=$1
-    local user_home=$2
-
-    # Clone Oh My Zsh repository
-    sudo -u $user git clone https://github.com/ohmyzsh/ohmyzsh.git $user_home/.oh-my-zsh
-
-    # Copy the zshrc template provided by Oh My Zsh
-    sudo -u $user cp $user_home/.oh-my-zsh/templates/zshrc.zsh-template $user_home/.zshrc
-
-    # Set the ownership of the .zshrc file to the user
-    chown $user:$user $user_home/.zshrc
-  }
-
-  # Loop through each user and update their shell and install Oh My Zsh
-  for user in $(awk -F: '{ if ($7 != "/usr/sbin/nologin" && $7 != "/bin/false" && $1 != "root") print $1 }' /etc/passwd); do
-    user_home=$(eval echo ~$user)
-
-    # Change the shell to zsh for each user
-    chsh -s "$(which zsh)" $user
-
-    # Check if the user home directory exists
-    if [ -d "$user_home" ]; then
-      # Install Oh My Zsh for this user
-      install_oh_my_zsh $user $user_home
-    fi
-  done
-
-  # Optionally, also change the shell for the root user and install Oh My Zsh
-  chsh -s "$(which zsh)" root
-  root_home=$(eval echo ~root)
-  install_oh_my_zsh root $root_home
-
-  # Print a message indicating completion
-  echo "Shell for all users has been updated to zsh, and Oh My Zsh installed."
-
-  # AWS CLI 2 installation
-  apt-get -y remove awscli
-  curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-  unzip awscliv2.zip
-  sudo ./aws/install
-
-  # KUBECTL and ARGOCD CLI installation
-  KUBECTL_VERSION="v1.28.0"
-  ARGOCD_VERSION="v2.7.4"
-
-  # Install kubectl
-  curl -LO "https://dl.k8s.io/release/$${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
-  chmod +x kubectl
-  sudo mv kubectl /usr/local/bin/
-
-  # Install ArgoCD CLI
-  curl -sSL -o argocd "https://github.com/argoproj/argo-cd/releases/download/$${ARGOCD_VERSION}/argocd-linux-amd64"
-  chmod +x argocd
-  sudo mv argocd /usr/local/bin/
-
-  # For root user
-  echo 'export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' >> /root/.zshrc
-
-  # For default Ubuntu user (assuming 'ubuntu' is the default user)
-  echo 'export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' >> /home/ubuntu/.zshrc
-  chown ubuntu:ubuntu /home/ubuntu/.zshrc
-
-  # Ensure changes are applied
-  source /root/.zshrc
-  sudo -u ubuntu source /home/ubuntu/.zshrc
-
-  EOF
-  # USER DATA AMAZON LINUX
   # user_data                   = <<-EOF
-  #   #!/bin/bash
 
-  #   # Update the system
-  #   yum -y update
+  # #!/bin/bash
 
-  #   # Install zsh
-  #   yum -y install zsh
+  # # Update the system
+  # apt-get -y update
+  # apt-get -y upgrade
 
-  #   # Install util-linux-user to use the 'chsh' command
-  #   yum -y install util-linux-user
+  # # Install zsh
+  # apt-get -y install zsh
 
-  #   # Install git and wget, needed for Oh My Zsh installation
-  #   yum -y install git wget
+  # # Install util-linux to use the 'chsh' command (already included in util-linux in Ubuntu)
+  # apt-get -y install util-linux
 
-  #   # Function to install Oh My Zsh for a given user
-  #   install_oh_my_zsh() {
-  #     local user=$1
-  #     local user_home=$2
+  # # Install git and wget, needed for Oh My Zsh installation
+  # apt-get -y install git wget
 
-  #     # Clone Oh My Zsh repository
-  #     sudo -u $user git clone https://github.com/ohmyzsh/ohmyzsh.git $user_home/.oh-my-zsh
+  # # Function to install Oh My Zsh for a given user
+  # install_oh_my_zsh() {
+  #   local user=$1
+  #   local user_home=$2
 
-  #     # Copy the zshrc template provided by Oh My Zsh
-  #     sudo -u $user cp $user_home/.oh-my-zsh/templates/zshrc.zsh-template $user_home/.zshrc
+  #   # Clone Oh My Zsh repository
+  #   sudo -u $user git clone https://github.com/ohmyzsh/ohmyzsh.git $user_home/.oh-my-zsh
 
-  #     # Set the ownership of the .zshrc file to the user
-  #     chown $user:$user $user_home/.zshrc
-  #   }
+  #   # Copy the zshrc template provided by Oh My Zsh
+  #   sudo -u $user cp $user_home/.oh-my-zsh/templates/zshrc.zsh-template $user_home/.zshrc
 
-  #   # Loop through each user and update their shell and install Oh My Zsh
-  #   for user in $(awk -F: '{ if ($7 != "/sbin/nologin" && $7 != "/bin/false" && $1 != "root") print $1 }' /etc/passwd); do
+  #   # Set the ownership of the .zshrc file to the user
+  #   chown $user:$user $user_home/.zshrc
+  # }
+
+  # # Loop through each user and update their shell and install Oh My Zsh
+  # for user in $(awk -F: '{ if ($7 != "/usr/sbin/nologin" && $7 != "/bin/false" && $1 != "root") print $1 }' /etc/passwd); do
   #   user_home=$(eval echo ~$user)
 
   #   # Change the shell to zsh for each user
@@ -236,53 +155,141 @@ resource "aws_instance" "bastion" {
 
   #   # Check if the user home directory exists
   #   if [ -d "$user_home" ]; then
-  #       # Install Oh My Zsh for this user
-  #       install_oh_my_zsh $user $user_home
+  #     # Install Oh My Zsh for this user
+  #     install_oh_my_zsh $user $user_home
   #   fi
-  #   done
+  # done
 
-  #   # Optionally, also change the shell for the root user and install Oh My Zsh
-  #   chsh -s "$(which zsh)" root
-  #   root_home=$(eval echo ~root)
-  #   install_oh_my_zsh root $root_home
+  # # Optionally, also change the shell for the root user and install Oh My Zsh
+  # chsh -s "$(which zsh)" root
+  # root_home=$(eval echo ~root)
+  # install_oh_my_zsh root $root_home
 
-  #   # Print a message indicating completion
-  #   echo "Shell for all users has been updated to zsh, and Oh My Zsh installed."
+  # # Print a message indicating completion
+  # echo "Shell for all users has been updated to zsh, and Oh My Zsh installed."
 
-  #   # AWS CLI 2 installation
-  #   yum remove awscli
-  #   curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
-  #   unzip awscliv2.zip
-  #   sudo ./aws/install
+  # # AWS CLI 2 installation
+  # apt-get -y remove awscli
+  # curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+  # unzip awscliv2.zip
+  # sudo ./aws/install
 
-  #   # KUBECTL and ARGOCD CLI installtion
-  #   KUBECTL_VERSION="v1.28.0"
-  #   ARGOCD_VERSION="v2.7.4"
+  # # KUBECTL and ARGOCD CLI installation
+  # KUBECTL_VERSION="v1.28.0"
+  # ARGOCD_VERSION="v2.7.4"
 
-  #   # Install kubectl
-  #   curl -LO "https://dl.k8s.io/release/$${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
-  #   chmod +x kubectl
-  #   sudo mv kubectl /usr/local/bin/
+  # # Install kubectl
+  # curl -LO "https://dl.k8s.io/release/$${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+  # chmod +x kubectl
+  # sudo mv kubectl /usr/local/bin/
 
-  #   # Install ArgoCD CLI
-  #   curl -sSL -o argocd "https://github.com/argoproj/argo-cd/releases/download/$${ARGOCD_VERSION}/argocd-linux-amd64"
-  #   chmod +x argocd
-  #   sudo mv argocd /usr/local/bin/
+  # # Install ArgoCD CLI
+  # curl -sSL -o argocd "https://github.com/argoproj/argo-cd/releases/download/$${ARGOCD_VERSION}/argocd-linux-amd64"
+  # chmod +x argocd
+  # sudo mv argocd /usr/local/bin/
 
-  #   # For root user
-  #   echo 'export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' >> /root/.zshrc
+  # # For root user
+  # echo 'export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' >> /root/.zshrc
 
-  #   # For ec2-user
-  #   echo 'export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' >> /home/ec2-user/.zshrc
-  #   chown ec2-user:ec2-user /home/ec2-user/.zshrc
+  # # For default Ubuntu user (assuming 'ubuntu' is the default user)
+  # echo 'export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' >> /home/ubuntu/.zshrc
+  # chown ubuntu:ubuntu /home/ubuntu/.zshrc
 
-  #   # Ensure changes are applied
-  #   source /root/.zshrc
-  #   sudo -u ec2-user source /home/ec2-user/.zshrc
+  # # Ensure changes are applied
+  # source /root/.zshrc
+  # sudo -u ubuntu source /home/ubuntu/.zshrc
 
-  #      EOF
+  # EOF
+  # USER DATA AMAZON LINUX
+  user_data = <<-EOF
+    #!/bin/bash
+
+    # Update the system
+    yum -y update
+
+    # Install zsh
+    yum -y install zsh
+
+    # Install util-linux-user to use the 'chsh' command
+    yum -y install util-linux-user
+
+    # Install git and wget, needed for Oh My Zsh installation
+    yum -y install git wget
+
+    # Function to install Oh My Zsh for a given user
+    install_oh_my_zsh() {
+      local user=$1
+      local user_home=$2
+
+      # Clone Oh My Zsh repository
+      sudo -u $user git clone https://github.com/ohmyzsh/ohmyzsh.git $user_home/.oh-my-zsh
+
+      # Copy the zshrc template provided by Oh My Zsh
+      sudo -u $user cp $user_home/.oh-my-zsh/templates/zshrc.zsh-template $user_home/.zshrc
+
+      # Set the ownership of the .zshrc file to the user
+      chown $user:$user $user_home/.zshrc
+    }
+
+    # Loop through each user and update their shell and install Oh My Zsh
+    for user in $(awk -F: '{ if ($7 != "/sbin/nologin" && $7 != "/bin/false" && $1 != "root") print $1 }' /etc/passwd); do
+    user_home=$(eval echo ~$user)
+
+    # Change the shell to zsh for each user
+    chsh -s "$(which zsh)" $user
+
+    # Check if the user home directory exists
+    if [ -d "$user_home" ]; then
+        # Install Oh My Zsh for this user
+        install_oh_my_zsh $user $user_home
+    fi
+    done
+
+    # Optionally, also change the shell for the root user and install Oh My Zsh
+    chsh -s "$(which zsh)" root
+    root_home=$(eval echo ~root)
+    install_oh_my_zsh root $root_home
+
+    # Print a message indicating completion
+    echo "Shell for all users has been updated to zsh, and Oh My Zsh installed."
+
+    # AWS CLI 2 installation
+    yum remove awscli
+    curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
+    unzip awscliv2.zip
+    sudo ./aws/install
+
+    # KUBECTL and ARGOCD CLI installtion
+    KUBECTL_VERSION="v1.28.0"
+    ARGOCD_VERSION="v2.7.4"
+
+    # Install kubectl
+    curl -LO "https://dl.k8s.io/release/$${KUBECTL_VERSION}/bin/linux/amd64/kubectl"
+    chmod +x kubectl
+    sudo mv kubectl /usr/local/bin/
+
+    # Install ArgoCD CLI
+    curl -sSL -o argocd "https://github.com/argoproj/argo-cd/releases/download/$${ARGOCD_VERSION}/argocd-linux-amd64"
+    chmod +x argocd
+    sudo mv argocd /usr/local/bin/
+
+    # For root user
+    echo 'export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' >> /root/.zshrc
+
+    # For ec2-user
+    echo 'export PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin' >> /home/ec2-user/.zshrc
+    chown ec2-user:ec2-user /home/ec2-user/.zshrc
+
+    # Ensure changes are applied
+    source /root/.zshrc
+    sudo -u ec2-user source /home/ec2-user/.zshrc
+
+       EOF
 
   tags = {
-    Name = "${var.tags["Environment"]}-bastion-instance"
+    Name        = var.bastion_name
+    Environment = var.tags["Environment"]
+    Terraform   = var.tags["Terraform"]
+    Purpose     = var.tags["Purpose"]
   }
 }

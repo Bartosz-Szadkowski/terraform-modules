@@ -1,10 +1,14 @@
+variable "region" {
+  default = "us-east-1"
+}
+
 variable "vpc_id" {
   description = "The ID of the VPC where the bastion host will be deployed"
   type        = string
 }
 
 variable "subnet_ids" {
-  description = "The ID of the public subnet where the bastion host will be placed"
+  description = "The IDs of the subnets where the bastion host will be placed"
   type        = list(string)
 }
 
@@ -19,5 +23,11 @@ variable "tags" {
   default = {
     Terraform   = "true"
     Environment = "dev"
+    Purpose     = "bastion"
   }
+}
+
+variable "bastion_name" {
+  type    = string
+  default = "bastion"
 }

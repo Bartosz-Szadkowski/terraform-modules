@@ -35,10 +35,10 @@ resource "aws_iam_role_policy" "python_web_app_pod_policy" {
         Action = [
           "s3:*",
         ]
-        Effect   = "Allow"
+        Effect = "Allow"
         Resource = [
-          "arn:aws:s3:::application-bucket*",      
-          "arn:aws:s3:::application-bucket*/*"     
+          "arn:aws:s3:::application-bucket*",
+          "arn:aws:s3:::application-bucket*/*"
         ]
       },
     ]
