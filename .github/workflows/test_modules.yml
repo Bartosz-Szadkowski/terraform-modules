@@ -89,7 +89,7 @@ jobs:
   
     - name: Install dependencies
       run: |
-        cd terraform-modules/${{ env.module_name }}/tests
+        cd ${{ env.module_name }}/tests
         if [ ! -f "go.mod" ]; then
           go mod init github.com/your-org/${{ env.module_name }}-tests
         fi
@@ -97,5 +97,5 @@ jobs:
   
     - name: Run Terratest
       run: |
-        cd terraform-modules/${{ env.module_name }}/tests
+        cd ${{ env.module_name }}/tests
         go test -v -timeout 30m
