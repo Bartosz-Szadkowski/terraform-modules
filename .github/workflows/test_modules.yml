@@ -6,9 +6,6 @@ on:
       - 'secrets-*'
       - 'bastion-*'
       - 'vpc-*'
-      - 'eks-*'
-      - 'iam-*'
-      - 's3-*'
   pull_request:
     branches:
       - main
@@ -22,16 +19,18 @@ jobs:
     name: Test Terraform Modules
     runs-on: ubuntu-latest
 
+    env:
+      AWS_DEFAULT_REGION: us-east-1
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Configure AWS Credentials
-      uses: aws-actions/configure-aws-credentials@v4
+    - name: Configure AWS Credentials for OIDC
+      uses: aws-actions/configure-aws-credentials@v3
       with:
-        audience: sts.amazonaws.com
-        role-to-assume: ${{ vars.AWS_IAM_ROLE }}
-        aws-region: ${{ vars.AWS_REGION }}
+        role-to-assume: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<OIDC_ROLE_NAME>
+        aws-region: ${{ env.AWS_DEFAULT_REGION }}
 
     - name: Set up Go
       uses: actions/setup-go@v3
@@ -43,12 +42,24 @@ jobs:
       with:
         terraform_version: 1.0.0
 
+    - name: Detect Module Directory
+      id: detect-module
+      run: |
+        # Extract the module name based on the tag or pull request
+        if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+          MODULE_NAME=$(echo "${GITHUB_REF}" | sed 's/refs\/tags\///' | sed 's/-v[0-9.]*//')
+        else
+          # For pull requests, detect the modified directory
+          MODULE_NAME=$(git diff --name-only origin/main | grep '/' | cut -d '/' -f1 | uniq | head -n 1)
+        fi
+        echo "module_name=${MODULE_NAME}" >> $GITHUB_ENV
+
     - name: Install dependencies
       run: |
-        cd ${{ github.event.repository.name }}/tests
+        cd terraform-modules/${{ env.module_name }}/tests
         go mod tidy
 
     - name: Run Terratest
       run: |
-        cd ${{ github.event.repository.name }}/tests
+        cd terraform-modules/${{ env.module_name }}/tests
         go test -v -timeout 30m
