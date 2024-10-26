@@ -69,17 +69,23 @@ jobs:
         terraform init
   
     - name: Run Terraform Formatting Check
-      run: terraform fmt -check -recursive ${{ env.module_name }}
+      run: |
+        cd ${{ env.module_name }}
+        terraform fmt -check -recursive 
 
     - name: Run Terraform Validation
-      run: terraform validate ${{ env.module_name }}
+      run: |
+        cd ${{ env.module_name }}
+        terraform validate
 
     - name: Install tflint
       run: |
         curl -sL https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
   
     - name: Run Terraform Lint
-      run: tflint --recursive ${{ env.module_name }}
+      run: |
+        cd ${{ env.module_name }}
+        tflint --recursive 
   
     - name: Install golangci-lint
       run: |
