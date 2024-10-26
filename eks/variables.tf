@@ -63,14 +63,26 @@ variable "tags" {
   }
 }
 
-variable "admin_iam_role" {}
+variable "admin_iam_role" {
+  type = string
+}
 
-variable "master_admin_iam_arn" {}
+variable "master_admin_iam_arn" {
+  type = string
+}
 
-variable "github_actions_role" {}
+variable "github_actions_role" {
+  type = string
+}
 
-variable "python_web_app_namespace" {}
+variable "python_web_app_namespace" {
+  type = string
+}
 
-variable "python_web_app_sa" {}
+variable "python_web_app_sa" {
+  type = string
+}
 
-variable "python_web_app_role_arn" {}
+variable "python_web_app_role_arn" {
+  type = string
+}
