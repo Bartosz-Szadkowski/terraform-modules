@@ -19,18 +19,16 @@ jobs:
     name: Test Terraform Modules
     runs-on: ubuntu-latest
 
-    env:
-      AWS_DEFAULT_REGION: us-east-1
-
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
 
-    - name: Configure AWS Credentials for OIDC
-      uses: aws-actions/configure-aws-credentials@v3
+    - name: Configure AWS Credentials
+      uses: aws-actions/configure-aws-credentials@v4
       with:
-        role-to-assume: arn:aws:iam::<AWS_ACCOUNT_ID>:role/<OIDC_ROLE_NAME>
-        aws-region: ${{ env.AWS_DEFAULT_REGION }}
+        audience: sts.amazonaws.com
+        role-to-assume: ${{ vars.AWS_IAM_ROLE }}
+        aws-region: ${{ vars.AWS_REGION }}
 
     - name: Set up Go
       uses: actions/setup-go@v3
