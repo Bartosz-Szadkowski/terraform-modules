@@ -7,6 +7,16 @@ on:
   push:
     tags:
       - '*-*'
+  workflow_dispatch:
+    inputs:
+      module_name:
+        description: 'Select the module you want to test'
+        required: true
+        type: choice
+        options:
+          - vpc
+          - bastion
+          - secrets
 
 permissions:
   id-token: write
