@@ -2,6 +2,8 @@ name: Terraform Module Tests
 
 on:
   push:
+    branches:
+      - '*/feature-*'
     tags:
       - 'secrets-*'
       - 'bastion-*'
@@ -43,12 +45,12 @@ jobs:
     - name: Detect Module Directory
       id: detect-module
       run: |
-        # Extract the module name based on the tag or pull request
-        if [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+        if [[ "${GITHUB_REF}" == refs/heads/* ]]; then
+          # Extract the module name from the branch name
+          MODULE_NAME=$(echo "${GITHUB_REF}" | sed 's/refs\/heads\///' | cut -d '/' -f1)
+        elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
+          # Extract the module name based on the tag name
           MODULE_NAME=$(echo "${GITHUB_REF}" | sed 's/refs\/tags\///' | sed 's/-v[0-9.]*//')
-        else
-          # For pull requests, detect the modified directory
-          MODULE_NAME=$(git diff --name-only origin/main | grep '/' | cut -d '/' -f1 | uniq | head -n 1)
         fi
         echo "module_name=${MODULE_NAME}" >> $GITHUB_ENV
 
