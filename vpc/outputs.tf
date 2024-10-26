@@ -5,17 +5,17 @@ output "vpc_id" {
 
 output "public_subnet_ids" {
   description = "The IDs of the public subnets"
-  value       = aws_subnet.public.*.id
+  value       = [for subnet in aws_subnet.public : subnet.id]
 }
 
 output "private_eks_subnet_ids" {
   description = "The IDs of the private subnets"
-  value       = aws_subnet.private_eks.*.id
+  value       = [for subnet in aws_subnet.private_eks : subnet.id]
 }
 
 output "private_rds_subnet_ids" {
   description = "The IDs of the rds private subnets"
-  value       = aws_subnet.private_rds.*.id
+  value       = [for subnet in aws_subnet.private_rds : subnet.id]
 }
 
 output "vpc_cidr_block" {

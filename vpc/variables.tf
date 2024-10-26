@@ -1,4 +1,5 @@
 variable "region" {
+  type    = string
   default = "us-east-1"
 }
 
@@ -7,7 +8,9 @@ variable "availability_zones" {
   default = ["us-east-1a", "us-east-1b"]
 }
 
-variable "vpc_cidr_block" {}
+variable "vpc_cidr_block" {
+  type = string
+}
 
 variable "public_subnets_cidr_blocks" {
   type = list(string)
