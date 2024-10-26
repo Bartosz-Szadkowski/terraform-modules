@@ -59,7 +59,7 @@ jobs:
         if [ ! -f "go.mod" ]; then
           go mod init github.com/your-org/${{ env.module_name }}-tests
         fi
-        go mod tidy
+        go mod tidy -compat=1.17
 
     - name: Run Terratest
       run: |
