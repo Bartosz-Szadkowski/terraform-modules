@@ -64,24 +64,24 @@ jobs:
         echo "module_name=${MODULE_NAME}" >> $GITHUB_ENV
   
     - name: Run Terraform Formatting Check
-      run: terraform fmt -check -recursive ./terraform-modules/${{ env.module_name }}
+      run: terraform fmt -check -recursive ${{ env.module_name }}
 
     - name: Run Terraform Validation
-      run: terraform validate ./terraform-modules/${{ env.module_name }}
+      run: terraform validate ${{ env.module_name }}
 
     - name: Install tflint
       run: |
         curl -sL https://raw.githubusercontent.com/terraform-linters/tflint/master/install_linux.sh | bash
   
     - name: Run Terraform Lint
-      run: tflint --recursive ./terraform-modules/${{ env.module_name }}
+      run: tflint --recursive ${{ env.module_name }}
   
     - name: Install golangci-lint
       run: |
         curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.45.2
   
     - name: Run Go Lint
-      run: golangci-lint run ./terraform-modules/${{ env.module_name }}/tests/...
+      run: golangci-lint run ${{ env.module_name }}/tests
   
     - name: Install dependencies
       run: |
