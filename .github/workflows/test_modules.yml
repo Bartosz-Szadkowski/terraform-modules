@@ -1,16 +1,12 @@
 name: Terraform Module Tests
 
 on:
-  push:
-    branches:
-      - '*/feature-*'
-    tags:
-      - 'secrets-*'
-      - 'bastion-*'
-      - 'vpc-*'
   pull_request:
     branches:
       - main
+  push:
+    tags:
+      - '*-*'
 
 permissions:
   id-token: write
@@ -20,6 +16,9 @@ jobs:
   terraform-test:
     name: Test Terraform Modules
     runs-on: ubuntu-latest
+
+    env:
+      AWS_DEFAULT_REGION: us-east-1
 
     steps:
     - name: Checkout repository
@@ -45,9 +44,9 @@ jobs:
     - name: Detect Module Directory
       id: detect-module
       run: |
-        if [[ "${GITHUB_REF}" == refs/heads/* ]]; then
-          # Extract the module name from the branch name
-          MODULE_NAME=$(echo "${GITHUB_REF}" | sed 's/refs\/heads\///' | cut -d '/' -f1)
+        if [[ "${GITHUB_REF}" == refs/pull/* ]]; then
+          # Extract the module name from the branch name in the pull request
+          MODULE_NAME=$(echo "${GITHUB_HEAD_REF}" | cut -d '/' -f1)
         elif [[ "${GITHUB_REF}" == refs/tags/* ]]; then
           # Extract the module name based on the tag name
           MODULE_NAME=$(echo "${GITHUB_REF}" | sed 's/refs\/tags\///' | sed 's/-v[0-9.]*//')
