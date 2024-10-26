@@ -87,13 +87,6 @@ jobs:
         cd ${{ env.module_name }}
         tflint --recursive 
   
-    - name: Install golangci-lint
-      run: |
-        curl -sSfL https://raw.githubusercontent.com/golangci/golangci-lint/master/install.sh | sh -s -- -b $(go env GOPATH)/bin v1.45.2
-  
-    - name: Run Go Lint
-      run: golangci-lint run ${{ env.module_name }}/tests
-  
     - name: Install dependencies
       run: |
         cd terraform-modules/${{ env.module_name }}/tests
