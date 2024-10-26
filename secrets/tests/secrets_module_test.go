@@ -36,7 +36,7 @@ func TestSecretsModule(t *testing.T) {
 
 	awsRegion := "us-east-1"
 
-	roleName := "GitHubEstaRole"
+	roleName := "GitHubActionsRoleEsta"
 
 	// Generate the allowed role ARN
 	allowedRoleArn := generateAllowedRoleArn(t, awsRegion, roleName)
