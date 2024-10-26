@@ -212,7 +212,7 @@ resource "aws_vpc_endpoint" "cloudwatch_logs" {
 resource "aws_vpc_endpoint" "ssm" {
   vpc_id              = aws_vpc.this.id
   service_name        = "com.amazonaws.${var.region}.ssm"
-  subnet_ids          = aws_subnet.private_eks.*.id # Attach to private subnets
+  subnet_ids          = [for subnet in aws_subnet.private_eks : subnet.id]
   security_group_ids  = [aws_security_group.vpc_endpoints_sg.id]
   private_dns_enabled = true
   vpc_endpoint_type   = "Interface"
@@ -224,7 +224,7 @@ resource "aws_vpc_endpoint" "ssm" {
 resource "aws_vpc_endpoint" "ec2messages" {
   vpc_id              = aws_vpc.this.id
   service_name        = "com.amazonaws.${var.region}.ec2messages"
-  subnet_ids          = aws_subnet.private_eks.*.id # Attach to private subnets
+  subnet_ids          = [for subnet in aws_subnet.private_eks : subnet.id]
   security_group_ids  = [aws_security_group.vpc_endpoints_sg.id]
   private_dns_enabled = true
   vpc_endpoint_type   = "Interface"
@@ -236,7 +236,7 @@ resource "aws_vpc_endpoint" "ec2messages" {
 resource "aws_vpc_endpoint" "ssmmessages" {
   vpc_id              = aws_vpc.this.id
   service_name        = "com.amazonaws.${var.region}.ssmmessages"
-  subnet_ids          = aws_subnet.private_eks.*.id # Attach to private subnets
+  subnet_ids          = [for subnet in aws_subnet.private_eks : subnet.id]
   security_group_ids  = [aws_security_group.vpc_endpoints_sg.id]
   private_dns_enabled = true
   vpc_endpoint_type   = "Interface"
