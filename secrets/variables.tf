@@ -1,3 +1,8 @@
 variable "allowed_roles" {
-  default = "cloud_user"
+  description = "List of IAM ARNs (roles or users) allowed to access the secret"
+  type        = list(string)
+}
+
+variable "region" {
+  default = "us-east-1"
 }
