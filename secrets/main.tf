@@ -1,3 +1,7 @@
+provider "aws" {
+  region = var.region
+}
+
 resource "random_password" "argocd_password" {
   length = 16
   upper  = true
@@ -26,7 +30,7 @@ resource "aws_secretsmanager_secret_policy" "argocd_secret_policy" {
         Action   = "secretsmanager:GetSecretValue"
         Resource = aws_secretsmanager_secret.argocd_secret.arn
         Principal = {
-          AWS = ["arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/${var.allowed_roles}", "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/GitHubActionsRoleEsta"]
+          AWS = var.allowed_roles
         }
       },
       {
@@ -35,9 +39,7 @@ resource "aws_secretsmanager_secret_policy" "argocd_secret_policy" {
         Resource : aws_secretsmanager_secret.argocd_secret.arn,
         Condition : {
           StringNotEquals : {
-            "aws:PrincipalArn" : [
-              "arn:aws:iam::${data.aws_caller_identity.current.account_id}:user/${var.allowed_roles}", "arn:aws:iam::${data.aws_caller_identity.current.account_id}:role/GitHubActionsRoleEsta"
-            ]
+            "aws:PrincipalArn" : var.allowed_roles
           }
         },
         Principal : "*"
