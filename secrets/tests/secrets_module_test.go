@@ -4,25 +4,48 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/gruntwork-io/terratest/modules/aws"
 	"github.com/gruntwork-io/terratest/modules/terraform"
 	"github.com/stretchr/testify/assert"
 )
+
+// Function to construct the ARN for the "GitHubEstaRole" dynamically
+func generateAllowedRoleArn(t *testing.T, awsRegion string, roleName string) string {
+	// Create an STS client
+	stsClient, err := aws.NewStsClientE(t, awsRegion)
+	if err != nil {
+		t.Fatalf("Failed to create STS client: %v", err)
+	}
+
+	// Get the caller identity, which includes the AWS account ID
+	callerIdentity, err := stsClient.GetCallerIdentity(&sts.GetCallerIdentityInput{})
+	if err != nil {
+		t.Fatalf("Failed to get caller identity: %v", err)
+	}
+
+	// Construct the ARN using the account ID and the provided role name
+	accountID := *callerIdentity.Account
+	roleArn := fmt.Sprintf("arn:aws:iam::%s:role/%s", accountID, roleName)
+
+	return roleArn
+}
 
 func TestSecretsModule(t *testing.T) {
 	t.Parallel()
 
 	awsRegion := "us-east-1"
 
-	// Get the ARN of the current IAM user
-	currentUserArn := aws.GetIamCurrentUserArn(t)
-	fmt.Printf("Using IAM user ARN: %s\n", currentUserArn)
+	roleName := "GitHubEstaRole"
+
+	// Generate the allowed role ARN
+	allowedRoleArn := generateAllowedRoleArn(t, awsRegion, roleName)
 
 	// Configure Terraform options for the secrets module
 	terraformOptions := terraform.WithDefaultRetryableErrors(t, &terraform.Options{
 		TerraformDir: "../",
 		Vars: map[string]interface{}{
-			"allowed_roles": []string{currentUserArn},
+			"allowed_roles": []string{allowedRoleArn},
 		},
 	})
 
