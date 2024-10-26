@@ -62,6 +62,11 @@ jobs:
           MODULE_NAME=$(echo "${GITHUB_REF}" | sed 's/refs\/tags\///' | sed 's/-v[0-9.]*//')
         fi
         echo "module_name=${MODULE_NAME}" >> $GITHUB_ENV
+
+    - name: Run Terraform init
+      run: |
+        cd ${{ env.module_name }}
+        terraform init
   
     - name: Run Terraform Formatting Check
       run: terraform fmt -check -recursive ${{ env.module_name }}
