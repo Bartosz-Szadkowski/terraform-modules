@@ -55,10 +55,10 @@ jobs:
 
     - name: Install dependencies
       run: |
-        cd terraform-modules/${{ env.module_name }}/tests
+        cd ${{ env.module_name }}/tests
         go mod tidy
 
     - name: Run Terratest
       run: |
-        cd terraform-modules/${{ env.module_name }}/tests
+        cd ${{ env.module_name }}/tests
         go test -v -timeout 30m
