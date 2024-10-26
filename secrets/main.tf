@@ -13,8 +13,6 @@ resource "aws_secretsmanager_secret_version" "argocd_secret_version" {
   secret_string = random_password.argocd_password.result
 }
 
-data "aws_caller_identity" "current" {}
-
 resource "aws_secretsmanager_secret_policy" "argocd_secret_policy" {
   secret_arn = aws_secretsmanager_secret.argocd_secret.arn
 
