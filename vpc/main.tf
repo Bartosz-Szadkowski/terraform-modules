@@ -28,7 +28,7 @@ resource "aws_subnet" "public" {
 
   vpc_id            = aws_vpc.this.id
   cidr_block        = var.public_subnets_cidr_blocks[count.index]
-  availability_zone = var.availability_zones[count.index].id
+  availability_zone = var.availability_zones[count.index]
 
   tags = {
     Name = "${var.tags["Environment"]}-public-subnet-${count.index + 1}"
@@ -79,7 +79,7 @@ resource "aws_subnet" "private_eks" {
 
   vpc_id            = aws_vpc.this.id
   cidr_block        = var.private_subnets_eks_cidr_blocks[count.index]
-  availability_zone = var.availability_zones[count.index].id
+  availability_zone = var.availability_zones[count.index]
 
   tags = {
     Name = "${var.tags["Environment"]}-private-subnet-eks-${count.index + 1}"
@@ -119,7 +119,7 @@ resource "aws_subnet" "private_rds" {
 
   vpc_id            = aws_vpc.this.id
   cidr_block        = var.private_subnets_rds_cidr_blocks[count.index]
-  availability_zone = var.availability_zones[count.index].id
+  availability_zone = var.availability_zones[count.index]
 
   tags = {
     Name = "${var.tags["Environment"]}-private-subnet-rds-${count.index + 1}"
