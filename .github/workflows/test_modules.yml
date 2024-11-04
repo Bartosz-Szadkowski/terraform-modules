@@ -98,7 +98,7 @@ jobs:
       id: checkov
       uses: bridgecrewio/checkov-action@master
       with:
-        directory: .
+        directory: "${{ env.module_name }}/"
         framework: terraform,kubernetes
         output_format: sarif
         log_level: WARNING
