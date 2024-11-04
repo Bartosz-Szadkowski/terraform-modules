@@ -90,8 +90,9 @@ jobs:
       run: |
         cd ${{ env.module_name }}
         tflint --recursive 
-        - name: Install Checkov
-        run: pip install checkov==3.2.270
+
+    - name: Install Checkov
+      run: pip install checkov==3.2.270
   
     - name: Test with Checkov
       id: checkov
