@@ -90,6 +90,20 @@ jobs:
       run: |
         cd ${{ env.module_name }}
         tflint --recursive 
+
+    - name: Install Checkov
+      run: pip install checkov==3.2.270
+  
+    - name: Test with Checkov
+      id: checkov
+      uses: bridgecrewio/checkov-action@master
+      with:
+        directory: "${{ env.module_name }}/"
+        framework: terraform,kubernetes
+        output_format: sarif
+        log_level: WARNING
+        download_external_modules: true
+        container_user: 0
   
     - name: Check for Tests Directory
       id: check-tests
